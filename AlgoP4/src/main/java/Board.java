@@ -1,3 +1,5 @@
+import java.util.Comparator;
+
 /**
  * Created by Artem_Mikhalevitch on 3/18/15.
  */
@@ -18,6 +20,18 @@ public class Board {
      * J coordinate
      */
     private int zeroJ;
+    /**
+     * Board.
+     */
+    public Board parent;
+    /**
+     * Board.
+     */
+    private int level;
+    /**
+     * Board.
+     */
+    public static PriceComparator priceComparator = new PriceComparator();
 
     /**
      * Constructor
@@ -43,18 +57,20 @@ public class Board {
     /**
      * Constructor
      */
-    private Board(int[][] blockInts, int emptyI, int emptyJ) {
+    private Board(Board prev, int emptyI, int emptyJ) {
 
-        this.n = blockInts.length;
+        this.n = prev.blocks.length;
 
         this.blocks = new int[n][n];
 
         for (int i = 0; i < n; i++) {
-            System.arraycopy(blockInts[i], 0, blocks[i], 0, n);
+            System.arraycopy(prev.blocks[i], 0, blocks[i], 0, n);
         }
 
         this.zeroJ = emptyJ;
         this.zeroI = emptyI;
+        this.parent = prev;
+        this.level = parent.level + 1;
     }
 
     /**
@@ -130,11 +146,11 @@ public class Board {
      */
     public Board twin() {
 
-        Board b = new Board(this.blocks, zeroI, zeroJ);
+        Board b = new Board(this, zeroI, zeroJ);
 
         if (zeroI > 0) {
             swap(b, 0, 0, 0, 1);
-        }else{
+        } else {
             swap(b, 1, 0, 1, 1);
         }
 
@@ -183,30 +199,38 @@ public class Board {
      */
     public Iterable<Board> neighbors() {
 
-        Stack<Board> boards = new Stack<Board>();
+        MinPQ<Board> boards = new MinPQ<Board>(2, Board.priceComparator);
 
         if (zeroJ != 0) {
-            Board b = new Board(this.blocks, zeroI, zeroJ - 1);
+            Board b = new Board(this, zeroI, zeroJ - 1);
             swap(b, zeroI, zeroJ, zeroI, zeroJ - 1);
-            boards.push(b);
+            if (!b.equals(this.parent)) {
+                boards.insert(b);
+            }
         }
 
         if (zeroJ != n - 1) {
-            Board b = new Board(this.blocks, zeroI, zeroJ + 1);
+            Board b = new Board(this, zeroI, zeroJ + 1);
             swap(b, zeroI, zeroJ, zeroI, zeroJ + 1);
-            boards.push(b);
+            if (!b.equals(this.parent)) {
+                boards.insert(b);
+            }
         }
 
         if (zeroI != 0) {
-            Board b = new Board(this.blocks, zeroI, zeroJ);
+            Board b = new Board(this, zeroI, zeroJ);
             swap(b, zeroI, zeroJ, zeroI - 1, zeroJ);
-            boards.push(b);
+            if (!b.equals(this.parent)) {
+                boards.insert(b);
+            }
         }
 
         if (zeroI != n - 1) {
-            Board b = new Board(this.blocks, zeroI, zeroJ + 1);
+            Board b = new Board(this, zeroI, zeroJ + 1);
             swap(b, zeroI, zeroJ, zeroI + 1, zeroJ);
-            boards.push(b);
+            if (!b.equals(this.parent)) {
+                boards.insert(b);
+            }
         }
 
         return boards;
@@ -237,6 +261,18 @@ public class Board {
         }
         return s.toString();
     }
+
+    static class PriceComparator implements Comparator<Board> {
+        @Override
+        public int compare(Board o1, Board o2) {
+            int result = o1.manhattan() + o1.level - o2.manhattan() - o2.level;
+            if (result == 0) {
+                result = o1.hamming() + o1.level - o2.hamming() - o2.level;
+            }
+            return result;
+        }
+    }
+
     /**
      * Main
      */

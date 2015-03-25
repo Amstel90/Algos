@@ -9,7 +9,7 @@ import java.util.Iterator;
 public class BoardTest {
 
     private int[][] board = {{8, 1, 3}, {4, 0, 2}, {7, 6, 5}};
-    private int[][] goal = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}};
+    private int[][] goal = {{1, 2, 3}, {4, 5, 6}, {7, 8, 0}};
 
     @Test
     public void testFunc() {
@@ -27,11 +27,11 @@ public class BoardTest {
         Board b = new Board(board);
         Iterator<Board> boards = b.neighbors().iterator();
 
-        //while(boards.hasNext()){
-        //    System.out.println(boards.next());
-      //  }
-        System.out.println(b);
-        System.out.println(b.twin());
+      while(boards.hasNext()){
+          //System.out.println(boards.next().level);
+        }
+        //System.out.println(b);
+        //System.out.println(b.twin());
 
     }
 

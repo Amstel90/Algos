@@ -1,4 +1,5 @@
 import java.util.Comparator;
+import java.util.Iterator;
 
 /**
  * Created by Artem_Mikhalevitch on 3/18/15.
@@ -15,14 +16,59 @@ public class Solver {
     /*
     * Board.
     */
-    private MinPQ<Board> queue;
+    private boolean solvable;
+    /*
+    * Board.
+    */
+    private MinPQ<Board> open;
+    /*
+    * Board.
+    */
+    private Stack<Board> solution;
 
     /*
      * Constructor. Find a solution to the initial board (using the A* algorithm)
      */
     public Solver(Board initial) {
         board = initial;
-        queue = new MinPQ<Board>(0, new BoardComparator());
+        open = new MinPQ<Board>(0, Board.priceComparator);
+        this.solve();
+    }
+
+    /*
+    * Solution.
+     */
+    private void solve() {
+
+        boolean found = false;
+        open.insert(this.board);
+
+        while (open.size() != 0 && !found) {
+
+            Board min = open.delMin();
+
+            if (min.isGoal()) {
+                found = true;
+                this.restorePath(min);
+            }
+
+            Iterator<Board> iterator = min.neighbors().iterator();
+
+            while (iterator.hasNext()) {
+                Board next = iterator.next();
+                open.insert(next);
+            }
+        }
+    }
+
+    private void restorePath(Board board) {
+
+        solution = new Stack<Board>();
+
+        while (board != null) {
+            solution.push(board);
+            board = board.parent;
+        }
     }
 
     /*
@@ -30,7 +76,7 @@ public class Solver {
      * @return true if solvable
      */
     public boolean isSolvable() {
-        throw new UnsupportedOperationException();
+        return solvable;
     }
 
     /*
@@ -46,19 +92,7 @@ public class Solver {
      * @return sequence of boards in a shortest solution; null if unsolvable
      */
     public Iterable<Board> solution() {
-        Stack<Board> boards = new Stack<Board>();
-
-        return boards;
-    }
-
-    /*
-     * Returns sequence of boards in a shortest solution; null if unsolvable
-     */
-    private class BoardComparator implements Comparator<Board> {
-        @Override
-        public int compare(Board o1, Board o2) {
-            return o1.manhattan() - o2.dimension();
-        }
+        return solution;
     }
 
     /*
@@ -67,7 +101,12 @@ public class Solver {
      */
     public static void main(String[] args) {
         // create initial board from file
-        In in = new In(args[0]);
+        String folder = "D:\\Projects\\Algos\\AlgoP4\\src\\main\\resources\\";
+        String fileName = "puzzle05.txt";
+        //String fileName = args[0];
+
+        In in = new In(folder + fileName);
+
         int N = in.readInt();
         int[][] blocks = new int[N][N];
         for (int i = 0; i < N; i++)
