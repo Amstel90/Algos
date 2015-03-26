@@ -1,5 +1,3 @@
-import java.util.Comparator;
-
 /**
  * Created by Artem_Mikhalevitch on 3/18/15.
  */
@@ -23,15 +21,19 @@ public class Board {
     /**
      * Board.
      */
-    public Board parent;
+    private boolean toLeft;
     /**
      * Board.
      */
-    private int level;
+    private boolean toRight;
     /**
      * Board.
      */
-    public static PriceComparator priceComparator = new PriceComparator();
+    private boolean toUp;
+    /**
+     * Board.
+     */
+    private boolean toDown;
 
     /**
      * Constructor
@@ -69,8 +71,6 @@ public class Board {
 
         this.zeroJ = emptyJ;
         this.zeroI = emptyI;
-        this.parent = prev;
-        this.level = parent.level + 1;
     }
 
     /**
@@ -199,38 +199,34 @@ public class Board {
      */
     public Iterable<Board> neighbors() {
 
-        MinPQ<Board> boards = new MinPQ<Board>(2, Board.priceComparator);
+        Queue<Board> boards = new Queue<Board>();
 
-        if (zeroJ != 0) {
+        if (zeroJ != 0 && !toRight) {
             Board b = new Board(this, zeroI, zeroJ - 1);
             swap(b, zeroI, zeroJ, zeroI, zeroJ - 1);
-            if (!b.equals(this.parent)) {
-                boards.insert(b);
-            }
+            b.toLeft = true;
+            boards.enqueue(b);
         }
 
-        if (zeroJ != n - 1) {
+        if (zeroJ != n - 1 && !toLeft) {
             Board b = new Board(this, zeroI, zeroJ + 1);
             swap(b, zeroI, zeroJ, zeroI, zeroJ + 1);
-            if (!b.equals(this.parent)) {
-                boards.insert(b);
-            }
+            b.toRight = true;
+            boards.enqueue(b);
         }
 
-        if (zeroI != 0) {
-            Board b = new Board(this, zeroI, zeroJ);
+        if (zeroI != 0 && !toDown) {
+            Board b = new Board(this, zeroI - 1, zeroJ);
             swap(b, zeroI, zeroJ, zeroI - 1, zeroJ);
-            if (!b.equals(this.parent)) {
-                boards.insert(b);
-            }
+            b.toUp = true;
+            boards.enqueue(b);
         }
 
-        if (zeroI != n - 1) {
-            Board b = new Board(this, zeroI, zeroJ + 1);
+        if (zeroI != n - 1 && !toUp) {
+            Board b = new Board(this, zeroI + 1, zeroJ);
             swap(b, zeroI, zeroJ, zeroI + 1, zeroJ);
-            if (!b.equals(this.parent)) {
-                boards.insert(b);
-            }
+            b.toDown = true;
+            boards.enqueue(b);
         }
 
         return boards;
@@ -260,17 +256,6 @@ public class Board {
             s.append("\n");
         }
         return s.toString();
-    }
-
-    static class PriceComparator implements Comparator<Board> {
-        @Override
-        public int compare(Board o1, Board o2) {
-            int result = o1.manhattan() + o1.level - o2.manhattan() - o2.level;
-            if (result == 0) {
-                result = o1.hamming() + o1.level - o2.hamming() - o2.level;
-            }
-            return result;
-        }
     }
 
     /**
