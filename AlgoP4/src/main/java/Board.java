@@ -117,8 +117,7 @@ public class Board {
                 hammingRes++;
             }
             if (blocks[i] != 0) {
-                manhattanRes += Math.abs((blocks[i] - 1) / n - i / n) +
-                        Math.abs((blocks[i] - 1) % n - i % n);
+                manhattanRes += Math.abs((blocks[i] - 1) / n - i / n) + Math.abs((blocks[i] - 1) % n - i % n);
             }
         }
         this.hamming = hammingRes;
