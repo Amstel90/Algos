@@ -7,10 +7,11 @@ import java.util.ArrayList;
  * Created by ASUS on 26.03.2015.
  */
 public class SolverTest {
+    String folder = "D:\\Projects\\Algos\\AlgoP4\\src\\resources\\";
 
     @Test
     public void testTiming() {
-        String folder = "D:\\Projects\\Algos\\AlgoP4\\src\\resources\\";
+
         File file = new File(folder);
         ArrayList<Board> boards = new ArrayList<Board>();
         for (File f : file.listFiles()) {
@@ -22,7 +23,23 @@ public class SolverTest {
             new Solver(b).isSolvable();
         }
         System.out.println(stopwatch.elapsedTime());
+    }
 
+    //@Test
+    public void testFunc() {
+        String filename = "puzzle17.txt";
+
+        File f = new File(folder + filename);
+
+        Solver s = new Solver(readBoard(f));
+
+        if (!s.isSolvable())
+            StdOut.println("No solution possible");
+        else {
+            StdOut.println("Minimum number of moves = " + s.moves());
+            for (Board board : s.solution())
+                StdOut.println(board);
+        }
 
     }
 
@@ -34,7 +51,7 @@ public class SolverTest {
         for (int i = 0; i < N; i++)
             for (int j = 0; j < N; j++)
                 blocks[i][j] = in.readInt();
-        Board initial = new Board(blocks);
-        return initial;
+
+        return new Board(blocks);
     }
 }

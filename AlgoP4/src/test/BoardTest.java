@@ -28,7 +28,7 @@ public class BoardTest {
         Iterator<Board> boards = b.neighbors().iterator();
 
       while(boards.hasNext()){
-          //System.out.println(boards.next().level);
+          System.out.println(boards.next());
         }
         //System.out.println(b);
         //System.out.println(b.twin());

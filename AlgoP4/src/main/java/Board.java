@@ -9,15 +9,11 @@ public class Board {
     /**
      * Blocks Matrix
      */
-    private int[][] blocks;
+    private int[] blocks;
     /**
      * I coordinate
      */
-    private int zeroI;
-    /**
-     * J coordinate
-     */
-    private int zeroJ;
+    private int zero;
     /**
      * Board.
      */
@@ -36,21 +32,31 @@ public class Board {
     private boolean toDown;
 
     /**
+     * Board.
+     */
+    private int manhattan = -1;
+    /**
+     * Board.
+     */
+    private int hamming = -1;
+
+
+    /**
      * Constructor
      */
     public Board(int[][] blockInts) {
 
         this.n = blockInts.length;
 
-        blocks = new int[n][n];
+        blocks = new int[n * n];
 
         for (int i = 0; i < n; i++) {
             //System.arraycopy(blockInts[i], 0, blocks[i], 0, n);
             for (int j = 0; j < n; j++) {
-                this.blocks[i][j] = blockInts[i][j];
-                if (this.blocks[i][j] == 0) {
-                    this.zeroI = i;
-                    this.zeroJ = j;
+                int index = i * n + j;
+                this.blocks[index] = blockInts[i][j];
+                if (this.blocks[index] == 0) {
+                    this.zero = index;
                 }
             }
         }
@@ -59,18 +65,15 @@ public class Board {
     /**
      * Constructor
      */
-    private Board(Board prev, int emptyI, int emptyJ) {
+    private Board(Board prev, int empty) {
 
-        this.n = prev.blocks.length;
+        this.n = (int) Math.sqrt(prev.blocks.length);
 
-        this.blocks = new int[n][n];
+        this.blocks = new int[n * n];
 
-        for (int i = 0; i < n; i++) {
-            System.arraycopy(prev.blocks[i], 0, blocks[i], 0, n);
-        }
+        System.arraycopy(prev.blocks, 0, blocks, 0, n * n);
 
-        this.zeroJ = emptyJ;
-        this.zeroI = emptyI;
+        this.zero = empty;
     }
 
     /**
@@ -88,17 +91,10 @@ public class Board {
      * @return number of blocks out of place
      */
     public int hamming() {
-        int result = 0;
-
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                if (blocks[i][j] != 0 && blocks[i][j] != i * n + j + 1) {
-                    result++;
-                }
-            }
+        if (hamming == -1) {
+            calcPrices();
         }
-
-        return result;
+        return hamming;
     }
 
     /**
@@ -107,19 +103,26 @@ public class Board {
      * @return sum of Manhattan distances between blocks and goal
      */
     public int manhattan() {
-        int result = 0;
+        if (manhattan == -1) {
+            calcPrices();
+        }
+        return manhattan;
+    }
 
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                if (blocks[i][j] != 0) {
-                    int tmp = blocks[i][j] - 1;
-                    result += (Math.abs(tmp / n - i)
-                            + Math.abs(tmp % n - j));
-                }
+    private void calcPrices() {
+        int hammingRes = 0;
+        int manhattanRes = 0;
+        for (int i = 0; i < n * n; i++) {
+            if (blocks[i] != 0 && blocks[i] != i + 1) {
+                hammingRes++;
+            }
+            if (blocks[i] != 0) {
+                manhattanRes += Math.abs((blocks[i] - 1) / n - i / n) +
+                        Math.abs((blocks[i] - 1) % n - i % n);
             }
         }
-
-        return result;
+        this.hamming = hammingRes;
+        this.manhattan = manhattanRes;
     }
 
     /**
@@ -128,15 +131,7 @@ public class Board {
      * @return is this board the goal board?
      */
     public boolean isGoal() {
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                if (blocks[i][j] != 0 && blocks[i][j] != i * n + j + 1) {
-                    return false;
-                }
-            }
-        }
-
-        return true;
+        return this.hamming() == 0;
     }
 
     /**
@@ -146,12 +141,12 @@ public class Board {
      */
     public Board twin() {
 
-        Board b = new Board(this, zeroI, zeroJ);
+        Board b = new Board(this, zero);
 
-        if (zeroI > 0) {
-            swap(b, 0, 0, 0, 1);
+        if (zero >= n) {
+            swap(b, 0, 1);
         } else {
-            swap(b, 1, 0, 1, 1);
+            swap(b, n, n + 1);
         }
 
         return b;
@@ -181,12 +176,10 @@ public class Board {
      *
      * @return true if equals
      */
-    private boolean deepEquals(int[][] array) {
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                if (this.blocks[i][j] != array[i][j]) {
-                    return false;
-                }
+    private boolean deepEquals(int[] array) {
+        for (int i = 0; i < n * n; i++) {
+            if (this.blocks[i] != array[i]) {
+                return false;
             }
         }
         return true;
@@ -201,30 +194,33 @@ public class Board {
 
         Queue<Board> boards = new Queue<Board>();
 
+        int zeroJ = zero % n;
+        int zeroI = zero / n;
+
         if (zeroJ != 0 && !toRight) {
-            Board b = new Board(this, zeroI, zeroJ - 1);
-            swap(b, zeroI, zeroJ, zeroI, zeroJ - 1);
+            Board b = new Board(this, zero - 1);
+            swap(b, zero, zero - 1);
             b.toLeft = true;
             boards.enqueue(b);
         }
 
         if (zeroJ != n - 1 && !toLeft) {
-            Board b = new Board(this, zeroI, zeroJ + 1);
-            swap(b, zeroI, zeroJ, zeroI, zeroJ + 1);
+            Board b = new Board(this, zero + 1);
+            swap(b, zero, zero + 1);
             b.toRight = true;
             boards.enqueue(b);
         }
 
         if (zeroI != 0 && !toDown) {
-            Board b = new Board(this, zeroI - 1, zeroJ);
-            swap(b, zeroI, zeroJ, zeroI - 1, zeroJ);
+            Board b = new Board(this, zero - n);
+            swap(b, zero, zero - n);
             b.toUp = true;
             boards.enqueue(b);
         }
 
         if (zeroI != n - 1 && !toUp) {
-            Board b = new Board(this, zeroI + 1, zeroJ);
-            swap(b, zeroI, zeroJ, zeroI + 1, zeroJ);
+            Board b = new Board(this, zero + n);
+            swap(b, zero, zero + n);
             b.toDown = true;
             boards.enqueue(b);
         }
@@ -235,10 +231,10 @@ public class Board {
     /**
      * Returns string representation of this board (in the output format specified below)
      */
-    private void swap(Board b, int fromI, int fromJ, int toI, int toJ) {
-        int tmp = b.blocks[fromI][fromJ];
-        b.blocks[fromI][fromJ] = b.blocks[toI][toJ];
-        b.blocks[toI][toJ] = tmp;
+    private void swap(Board b, int from, int to) {
+        int tmp = b.blocks[from];
+        b.blocks[from] = b.blocks[to];
+        b.blocks[to] = tmp;
     }
 
     /**
@@ -251,7 +247,7 @@ public class Board {
         s.append(n + "\n");
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
-                s.append(String.format("%2d ", blocks[i][j]));
+                s.append(String.format("%2d ", blocks[i * n + j]));
             }
             s.append("\n");
         }
