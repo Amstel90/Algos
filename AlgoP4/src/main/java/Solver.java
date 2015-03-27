@@ -1,4 +1,6 @@
+import java.util.Comparator;
 import java.util.Iterator;
+import java.util.TreeSet;
 
 /**
  * Created by Artem_Mikhalevitch on 3/18/15.
@@ -40,13 +42,18 @@ public class Solver {
     private void solve() {
 
         open.insert(this.boardState);
-
-        int max = 0;
-        int actions = 0;
+        TreeSet<BoardState> closedSet
+                = new TreeSet<BoardState>(new StateComparator());
         while (open.size() != 0) {
-            //actions++;
+
             BoardState min = open.delMin();
-            //max = open.size() > max ? open.size() : max;
+
+            if (closedSet.contains(min)) {
+                min = null;
+                continue;
+            }
+
+            closedSet.add(min);
 
             if (min.board.isGoal()) {
                 solvable = true;
@@ -61,16 +68,15 @@ public class Solver {
             Iterator<Board> iterator = min.board.neighbors().iterator();
 
             while (iterator.hasNext()) {
-                Board next = iterator.next();
-                open.insert(new BoardState(next, min));
+                BoardState next = new BoardState(iterator.next(), min);
+                open.insert(next);
             }
         }
-
-        //System.out.println("pq max size: " + max);
-        //System.out.println("actions: " + actions);
-
     }
-
+    /*
+     * Returns true if the initial board solvable?
+     * @param another another state
+     */
     private void restorePath(final BoardState another) {
         BoardState state = another;
 
@@ -117,10 +123,6 @@ public class Solver {
      * @return min number of moves to solve initial board; -1 if unsolvable
      */
     public static void main(String[] args) {
-        // create initial board from file
-        //String folder = "D:\\Projects\\Algos\\AlgoP4\\src\\resources\\";
-        //String fileName = "puzzle3x3-unsolvable2.txt";
-        //In in = new In(folder + fileName);
         String fileName = args[0];
 
         In in = new In(fileName);
@@ -144,7 +146,21 @@ public class Solver {
                 StdOut.println(board);
         }
     }
-
+    /*
+     * State Comparator.
+     */
+    private class StateComparator implements Comparator<BoardState> {
+        @Override
+        public int compare(BoardState o1, BoardState o2) {
+            if (!o1.equals(o2)) {
+                return 1;
+            }
+            return 0;
+        }
+    }
+    /*
+     * State Comparator.
+     */
     private class BoardState implements Comparable {
 
         /*
@@ -186,6 +202,24 @@ public class Solver {
                 result = this.board.hamming() + this.level - that.board.hamming() - that.level;
             }
             return result;
+        }
+        /**
+         * Returns does this board equal y?
+         * @param y param
+         * @return does this board equal y?
+         */
+        @Override
+        public boolean equals(Object y) {
+            if (this == y) {
+                return true;
+            }
+
+            if (y instanceof BoardState) {
+                BoardState another = (BoardState) y;
+                return this.board.equals(another.board);
+            }
+
+            return false;
         }
     }
 }

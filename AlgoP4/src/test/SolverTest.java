@@ -25,7 +25,7 @@ public class SolverTest {
         System.out.println(stopwatch.elapsedTime());
     }
 
-    @Test
+   //@Test
     public void testFunc() {
         String filename = "puzzle17.txt";
 
