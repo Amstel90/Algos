@@ -5,7 +5,7 @@ import org.junit.Test;
 /**
  * Created by ASUS on 26.03.2015.
  */
-public class MainTest {
+public class PointSETTest {
 
     @Test
     public void test() {
