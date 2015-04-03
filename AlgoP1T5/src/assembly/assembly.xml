@@ -9,6 +9,11 @@
     <fileSets>
         <fileSet>
             <directory>${basedir}/src/main/java/</directory>
+            <excludes>
+                <exclude>
+                    RectHV.java
+                </exclude>
+            </excludes>
             <outputDirectory/>
         </fileSet>
     </fileSets>

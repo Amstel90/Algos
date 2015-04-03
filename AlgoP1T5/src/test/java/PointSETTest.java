@@ -67,7 +67,7 @@ public class PointSETTest {
 
     @Test
     public void files() {
-        String folder = "D:\\Projects\\Algos\\AlgoP1T5\\src\\resources\\";
+        String folder = "D:\\Projects\\STUDY\\src\\Algos\\AlgoP1T5\\src\\resources\\";
 
         File file = new File(folder);
         Stopwatch stopwatch1 = new Stopwatch();

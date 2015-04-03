@@ -7,7 +7,7 @@ public class PointSET {
     /**
      * Set.
      */
-    SET<Point2D> set;
+    private SET<Point2D> set;
 
     /**
      * Constructor.
