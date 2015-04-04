@@ -1,47 +1,119 @@
+import java.util.Iterator;
+
 /**
  * Created by Artem_Mikhalevitch on 3/18/15.
  */
 public class PointSET {
+    /**
+     * Set.
+     */
+    SET<Point2D> set;
 
+    /**
+     * Constructor.
+     */
     public PointSET() {
-
+        set = new SET<Point2D>();
     }
 
-    // is the set empty?
+    /**
+     * Returns if set is empty.
+     *
+     * @return if set is empty.
+     */
     public boolean isEmpty() {
-        throw new UnsupportedOperationException();
+        return set.isEmpty();
     }
 
-    // number of points in the set
+    /**
+     * Returns number of points in the set.
+     *
+     * @return number of points in the set.
+     */
     public int size() {
-        throw new UnsupportedOperationException();
+        return set.size();
     }
 
-    // add the point to the set (if it is not already in the set)
-    public void insert(Point2D p) {
-        throw new UnsupportedOperationException();
+    /**
+     * Adds pont to set.
+     *
+     * @param point new point.
+     */
+    public void insert(Point2D point) {
+        set.add(point);
     }
 
-    // does the set contain point p?
-    public boolean contains(Point2D p) {
-        throw new UnsupportedOperationException();
+    /**
+     * Returns true if contains.
+     *
+     * @param point point
+     * @return true if contains.
+     */
+    public boolean contains(Point2D point) {
+        return set.contains(point);
     }
 
-    // draw all points to standard draw
+    /**
+     * Draws all points.
+     */
     public void draw() {
-        throw new UnsupportedOperationException();
+        Iterator<Point2D> iterator = set.iterator();
+        while (iterator.hasNext()) {
+            iterator.next().draw();
+        }
     }
 
-    // all points that are inside the rectangle
+    /**
+     * Returns true if contains.
+     *
+     * @param rect rectangle
+     * @return all points in rectangle.
+     */
     public Iterable<Point2D> range(RectHV rect) {
-        throw new UnsupportedOperationException();
+        Queue<Point2D> result = new Queue<Point2D>();
+        Iterator<Point2D> iterator = set.iterator();
+
+        while (iterator.hasNext()) {
+            Point2D point2D = iterator.next();
+            if (rect.contains(point2D)) {
+                result.enqueue(point2D);
+            }
+        }
+        return result;
     }
 
-    // a nearest neighbor in the set to point p; null if the set is empty
-    public Point2D nearest(Point2D p) {
-        throw new UnsupportedOperationException();
+    /**
+     * Returns true if contains.
+     *
+     * @param point point
+     * @return nearest point.
+     */
+    public Point2D nearest(Point2D point) {
+
+        if (isEmpty()) {
+            return null;
+        }
+
+        Iterator<Point2D> iterator = set.iterator();
+        Point2D minPoint = iterator.next();
+        double minDistance = point.distanceTo(minPoint);
+
+        while (iterator.hasNext()) {
+            Point2D point2D = iterator.next();
+            double newDistance = point.distanceTo(point2D);
+            if (newDistance < minDistance) {
+                minDistance = newDistance;
+                minPoint = point2D;
+            }
+        }
+        return minPoint;
     }
 
+    /**
+     * Returns true if contains.
+     *
+     * @param args command line arguments
+     */
     public static void main(String[] args) {
         StdOut.println("Hello World");
     }

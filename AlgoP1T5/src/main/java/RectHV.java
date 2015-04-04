@@ -181,8 +181,11 @@ public class RectHV {
      * @return string representation
      */
 
+    @Override
     public String toString() {
-        throw new UnsupportedOperationException();
+        return String.format("[%s, %s]",
+                minPoint.toString(),
+                maxPoint.toString());
     }
 
     /**
