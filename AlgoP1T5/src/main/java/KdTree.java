@@ -2,9 +2,21 @@
  * Created by Artem_Mikhalevitch on 4/3/15.
  */
 public class KdTree {
-
+    /**
+     * Constructor
+     */
+    private static final int LOW = 0;
+    /**
+     * Constructor
+     */
+    private static final int HIGH = 1;
+    /**
+     * Constructor
+     */
     private Node root;
-
+    /**
+     * Constructor
+     */
     private int size;
 
     /**
@@ -45,12 +57,12 @@ public class KdTree {
         if (searchNode == null) {
             searchNode = new Node(point);
 
-            if (parentSearchNode == null) {//root
+            if (parentSearchNode == null) {
                 searchNode.vertical = true;
                 searchNode.rect = new RectHV(LOW, LOW, HIGH, HIGH);
             } else {
                 double cmp = compareTo(parentSearchNode, searchNode.point);
-                this.fillNode(searchNode, parentSearchNode, cmp > 0);
+                this.fillNode(searchNode, parentSearchNode, cmp >= 0);
             }
             size++;
             return searchNode;
@@ -59,10 +71,9 @@ public class KdTree {
 
         if (cmp < 0) {
             searchNode.left = insert(searchNode, searchNode.left, point);
-        } else if (cmp > 0) {
+        } else if (cmp > 0 || !searchNode.point.equals(point)) {
             searchNode.right = insert(searchNode, searchNode.right, point);
         }
-
         return searchNode;
     }
 
@@ -75,19 +86,19 @@ public class KdTree {
         node.vertical = !parent.vertical;
 
         if (parent.vertical) {
-            if (rightSubtree) {//right subtree
+            if (rightSubtree) {
                 if (node.point.x() != parent.point.x()) {
                     xMin = parent.point.x();
                 }
-            } else {//left subtree
+            } else {
                 xMax = parent.point.x();
             }
         } else {
-            if (rightSubtree) {//right subtree
+            if (rightSubtree) {
                 if (node.point.y() != parent.point.y()) {
                     yMin = parent.point.y();
                 }
-            } else {//left subtree
+            } else {
                 yMax = parent.point.y();
             }
         }
@@ -104,9 +115,13 @@ public class KdTree {
             return null;
         }
         double cmp = compareTo(searchNode, point);
-        if (cmp < 0) return search(searchNode.left, point);
-        else if (cmp > 0) return search(searchNode.right, point);
-        else return searchNode;
+        if (cmp < 0) {
+            return search(searchNode.left, point);
+        } else if (cmp > 0 || !searchNode.point.equals(point)) {
+            return search(searchNode.right, point);
+        } else {
+            return searchNode;
+        }
     }
 
     /**
@@ -118,15 +133,11 @@ public class KdTree {
     private double compareTo(Node node, Point2D point) {
         double result = 0;
         if (node.vertical) {
-            //x compare
             result = point.x() - node.point.x();
         } else {
             result = point.y() - node.point.y();
         }
-        if (result < 0) {
-            return -1;
-        }
-        return 1;
+        return result;
     }
 
     /**
@@ -195,49 +206,86 @@ public class KdTree {
         if (isEmpty()) {
             return null;
         }
-        return this.nearest(root, point, root.point.distanceSquaredTo(point)).point;
+        return this.nearest(root, point, Double.MAX_VALUE).point;
     }
 
     private Node nearest(Node node, Point2D point, double minDistance) {
 
-        if(node == null){
+        if (skipSubtree(node, point, minDistance)) {
             return null;
         }
 
-        double rectDistance = getDistance(node, point);
         double pointDistance = node.point.distanceSquaredTo(point);
+        minDistance = Math.min(pointDistance, minDistance);
 
-        if (rectDistance > minDistance || pointDistance > minDistance) {
+        Node lNode = null;
+        Node rNode = null;
+        double rDistance = Double.MAX_VALUE;
+        double lDistance = Double.MAX_VALUE;
+
+        if (node.vertical && point.x() > node.point.x()
+                ||!node.vertical && point.y() > node.point.y()) {
+            rNode = nearest(node.right, point,
+                    minDistance);
+
+            if (rNode != null) {
+                rDistance = rNode.point.distanceSquaredTo(point);
+            }
+            minDistance = Math.min(minDistance,
+                    rDistance);
+
+            lNode = nearest(node.left, point,
+                    minDistance);
+
+            if (lNode != null) {
+                lDistance = lNode.point.distanceSquaredTo(point);
+            }
+            minDistance = Math.min(minDistance,
+                    lDistance );
+        }else{
+            lNode = nearest(node.left, point,
+                    minDistance);
+
+            if (lNode != null) {
+                lDistance = lNode.point.distanceSquaredTo(point);
+            }
+            minDistance = Math.min(minDistance,
+                    lDistance );
+
+            rNode = nearest(node.right, point,
+                    minDistance);
+
+            if (rNode != null) {
+                rDistance = rNode.point.distanceSquaredTo(point);
+            }
+            
+            minDistance = Math.min(minDistance,
+                    rDistance);
+        }
+
+        if (minDistance == rDistance) {
+            return rNode;
+        } else if (minDistance == lDistance) {
+            return lNode;
+        } else if(minDistance == pointDistance) {
+            return node;
+        }else{
             return null;
         }
-
-        Node lNode = nearest(node.left, point, pointDistance);
-        Node rNode = nearest(node.right, point, pointDistance);
-
-        if (lNode == null && rNode == null) {
-            return node;
-        } else if (lNode == null) {
-            return rNode;
-        } else if (rNode == null) {
-            return lNode;
-        } else {
-            double rDistance = rNode.point.distanceSquaredTo(point);
-            double lDistance = lNode.point.distanceSquaredTo(point);
-
-            if (lDistance < rDistance) {
-                return lNode;
-            } else {
-                return rNode;
-            }
-        }
     }
 
-    private double getDistance(Node node, Point2D point) {
-        if (node == null) {
-            return Double.MAX_VALUE;
-        }
-        return node.rect.distanceSquaredTo(point);
+    private boolean skipSubtree(Node node, Point2D point, double minDistance) {
+        return node == null
+                || node.rect.distanceSquaredTo(point) >= minDistance;
     }
+//    private Node nearest(Node node, Point2D point, double minDistance) {
+//
+//        Node result = null;
+//
+//        double distance = node.rect.distanceSquaredTo(point);
+//
+//        return result;
+//    }
 
     /**
      * Main.
@@ -247,15 +295,12 @@ public class KdTree {
     public static void main(String[] args) {
     }
 
-    private final int LOW = 0;
-    private final int HIGH = 1;
-
     private static class Node {
-        private Point2D point;      // the point
-        private RectHV rect;    // the axis-aligned rectangle corresponding to this node
-        private Node left;        // the left/bottom subtree
-        private Node right;        // the right/top subtree
-        boolean vertical;
+        private Point2D point;
+        private RectHV rect;
+        private Node left;
+        private Node right;
+        private boolean vertical;
 
         private Node(Point2D point) {
             this.point = point;

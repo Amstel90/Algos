@@ -2,6 +2,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Iterator;
 
 /**
@@ -9,7 +10,7 @@ import java.util.Iterator;
  */
 public class KdTreeTest {
 
-    //@Test
+    @Test
     public void test() {
         KdTree kdtree = new KdTree();
         Assert.assertTrue(kdtree.isEmpty());
@@ -30,10 +31,10 @@ public class KdTreeTest {
         Point2D point3 = new Point2D(0.2, 0.2);
         kdtree.insert(point3);
         Assert.assertEquals(2, kdtree.size());
-        Assert.assertTrue(kdtree.contains(point2));
+        Assert.assertTrue(kdtree.contains(point3));
     }
 
-    //@Test
+    @Test
     public void testRect() {
         KdTree kdtree = new KdTree();
         kdtree.insert(new Point2D(0.1, 0.1));
@@ -64,9 +65,9 @@ public class KdTreeTest {
         Assert.assertEquals(new Point2D(0.4, 0.4), kdtree.nearest(new Point2D(0.9, 0.9)));
     }
 
-    //@Test
+    @Test
     public void files() {
-        String folder = "D:\\Projects\\STUDY\\src\\Algos\\AlgoP1T5\\src\\resources\\";
+        String folder = "D:\\Projects\\Algos\\AlgoP1T5\\src\\resources\\";
 
         File file = new File(folder);
         Stopwatch stopwatch1 = new Stopwatch();
@@ -85,7 +86,7 @@ public class KdTreeTest {
 
     // @Test
     public void file() {
-        String folder = "D:\\Projects\\STUDY\\src\\Algos\\AlgoP1T5\\src\\resources\\";
+        String folder = "D:\\Projects\\Algos\\AlgoP1T5\\src\\resources\\";
 
         File file = new File(folder + "circle10000.txt");
 
@@ -98,6 +99,28 @@ public class KdTreeTest {
         Assert.assertEquals(expected, counter(p, new RectHV(0, 0, 1, 1)));
         System.out.println(expected + " took:  " + stopwatch2.elapsedTime());
 
+    }
+
+    @Test
+    public void nearestCompare() {
+        ArrayList<Point2D> points = new ArrayList<Point2D>();
+
+        for (int i = 0; i < 10000; i++) {
+            points.add(new Point2D(StdRandom.uniform(), StdRandom.uniform()));
+        }
+
+        KdTree kdTree = new KdTree();
+        PointSET pointSET = new PointSET();
+
+        for (Point2D point : points) {
+            kdTree.insert(point);
+            pointSET.insert(point);
+        }
+        for (int i = 0; i < 1000; i++) {
+            Point2D nearestTest = new Point2D(StdRandom.uniform(), StdRandom.uniform());
+            Assert.assertEquals(pointSET.nearest(nearestTest).distanceSquaredTo(nearestTest),
+                    kdTree.nearest(nearestTest).distanceSquaredTo(nearestTest), 0.0001);
+        }
     }
 
     public KdTree readFile(File file, int n) {
