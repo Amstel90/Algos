@@ -14,10 +14,18 @@ public class WordNet {
      * @param hypernyms file 2
      */
     public WordNet(String synsets, String hypernyms) {
+
+        if (synsets == null || hypernyms == null) {
+            throw new NullPointerException();
+        }
+
         In synsetsIn = new In(synsets);
         synsetsList = new ArrayList<Synset>();
 
-
+        while (!synsetsIn.isEmpty()) {
+            String entry = synsetsIn.readString();
+            synsetsList.add(new Synset(entry));
+        }
     }
 
     /**
@@ -36,6 +44,9 @@ public class WordNet {
      * @return true if noun
      */
     public boolean isNoun(String word) {
+        if (word == null) {
+            throw new NullPointerException();
+        }
         throw new UnsupportedOperationException();
     }
 
@@ -47,6 +58,11 @@ public class WordNet {
      * @return distance between nounA and nounB.
      */
     public int distance(String nounA, String nounB) {
+
+        if (nounA == null || nounB == null) {
+            throw new NullPointerException();
+        }
+
         throw new UnsupportedOperationException();
     }
 
@@ -59,6 +75,11 @@ public class WordNet {
      * @return common ancestor of nounA and nounB.
      */
     public String sap(String nounA, String nounB) {
+
+        if (nounA == null || nounB == null) {
+            throw new NullPointerException();
+        }
+
         throw new UnsupportedOperationException();
     }
 
@@ -67,10 +88,11 @@ public class WordNet {
         private String sysnset;
         private String glossary;
 
-        private Synset(int id, String sysnset, String glossary) {
-            this.id = id;
-            this.sysnset = sysnset;
-            this.glossary = glossary;
+        private Synset(String unparsedSysnet) {
+            String[] split = unparsedSysnet.split(",");
+            id = Integer.parseInt(split[0]);
+            sysnset = split[1];
+            glossary = split[2];
         }
     }
 
