@@ -1,11 +1,13 @@
-import java.util.ArrayList;
+import java.util.*;
 
 /**
  * Created by ASUS on 16.04.2015.
  */
 public class WordNet {
 
-    ArrayList<Synset> synsetsList;
+    private Map<String, Integer> synsetMap;
+    private Map<Integer, List<String>> synsetMapId;
+    private SAP sap;
 
     /**
      * Constructor takes the name of the two input files.
@@ -19,13 +21,7 @@ public class WordNet {
             throw new NullPointerException();
         }
 
-        In synsetsIn = new In(synsets);
-        synsetsList = new ArrayList<Synset>();
-
-        while (!synsetsIn.isEmpty()) {
-            String entry = synsetsIn.readString();
-            synsetsList.add(new Synset(entry));
-        }
+        parse(synsets, hypernyms);
     }
 
     /**
@@ -34,7 +30,7 @@ public class WordNet {
      * @return all WordNet nouns
      */
     public Iterable<String> nouns() {
-        throw new UnsupportedOperationException();
+        return this.synsetMap.keySet();
     }
 
     /**
@@ -47,7 +43,7 @@ public class WordNet {
         if (word == null) {
             throw new NullPointerException();
         }
-        throw new UnsupportedOperationException();
+        return this.synsetMap.containsKey(word);
     }
 
     /**
@@ -59,11 +55,9 @@ public class WordNet {
      */
     public int distance(String nounA, String nounB) {
 
-        if (nounA == null || nounB == null) {
-            throw new NullPointerException();
-        }
+        validate(nounA, nounB);
 
-        throw new UnsupportedOperationException();
+        return sap.length(this.synsetMap.get(nounA), this.synsetMap.get(nounB));
     }
 
     /**
@@ -76,23 +70,120 @@ public class WordNet {
      */
     public String sap(String nounA, String nounB) {
 
+        validate(nounA, nounB);
+
+        int ancestor = sap.ancestor(this.synsetMap.get(nounA), this.synsetMap.get(nounB));
+
+        return sap(ancestor);
+    }
+
+    private String sap(int ancestor) {
+
+        List<String> bag = this.synsetMapId.get(ancestor);
+        StringBuilder sb = new StringBuilder();
+        for (String noun : bag) {
+            sb.append(noun + " ");
+        }
+        return sb.toString();
+    }
+
+
+    /**
+     * A synset (second field of synsets.txt) that is the common ancestor of nounA and nounB.
+     * in a shortest ancestral path (defined below)
+     *
+     * @param nounA param 1
+     * @param nounB param 1
+     * @return common ancestor of nounA and nounB.
+     */
+    private void validate(String nounA, String nounB) {
+
         if (nounA == null || nounB == null) {
             throw new NullPointerException();
         }
 
-        throw new UnsupportedOperationException();
+        if (!isNoun(nounA) || !isNoun(nounB)) {
+            throw new IllegalArgumentException();
+        }
     }
 
-    private class Synset {
-        private int id;
-        private String sysnset;
-        private String glossary;
+    /**
+     * Constructor takes the name of the two input files.
+     *
+     * @param synsets   file 1
+     * @param hypernyms file 2
+     */
+    private void parse(String synsets, String hypernyms) {
 
-        private Synset(String unparsedSysnet) {
-            String[] split = unparsedSysnet.split(",");
-            id = Integer.parseInt(split[0]);
-            sysnset = split[1];
-            glossary = split[2];
+        synsetMap = new HashMap<String, Integer>();
+        synsetMapId = new HashMap<Integer, List<String>>();
+
+        In synsetsIn = new In(synsets);
+        int nouns = 0;
+
+        while (!synsetsIn.isEmpty()) {
+            parseSynSet(synsetsIn.readLine());
+            nouns++;
+        }
+
+        synsetsIn.close();
+
+        Digraph digraph = new Digraph(nouns);
+
+        In hypernymIn = new In(hypernyms);
+
+        while (!hypernymIn.isEmpty()) {
+            parseHypernym(digraph, hypernymIn.readLine());
+        }
+
+        hypernymIn.close();
+
+        DirectedCycle cycle = new DirectedCycle(digraph);
+
+        if (cycle.hasCycle()) {
+            throw new IllegalArgumentException();
+        }
+
+        sap = new SAP(digraph);
+    }
+
+    /**
+     * Constructor takes the name of the two input files.
+     *
+     * @param entry file 1
+     */
+    private void parseSynSet(String entry) {
+
+        String[] split = entry.split(",");
+
+        int id = Integer.parseInt(split[0]);
+
+        String[] split2 = split[1].split(" ");
+
+        List<String> sap = new LinkedList<String>();
+
+        for (String syn : split2) {
+            synsetMap.put(syn, id);
+            sap.add(syn);
+        }
+
+        synsetMapId.put(id, sap);
+    }
+
+    /**
+     * Constructor takes the name of the two input files.
+     *
+     * @param d     d
+     * @param entry file 1
+     */
+    private void parseHypernym(Digraph d, String entry) {
+
+        String[] split = entry.split(",");
+
+        int id = Integer.parseInt(split[0]);
+
+        for (int i = 1; i < split.length; i++) {
+            d.addEdge(id, Integer.parseInt(split[i]));
         }
     }
 

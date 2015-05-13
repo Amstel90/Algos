@@ -8,9 +8,9 @@ public class Outcast {
     /**
      * Constructor takes a WordNet object.
      *
-     * @param wordnet wordnet
+     * @param wordNet wordNet
      */
-    public Outcast(WordNet wordnet) {
+    public Outcast(WordNet wordNet) {
         this.wordNet = wordNet;
     }
 
@@ -21,7 +21,25 @@ public class Outcast {
      * @return all WordNet nouns
      */
     public String outcast(String[] nouns) {
-        throw new UnsupportedOperationException();
+        String outcast = null;
+        int max = 0;
+
+        for (int i = 0; i < nouns.length; i++) {
+            int distance = 0;
+            for (int j = 0; j < nouns.length; j++) {
+                if (i == j) {
+                    continue;
+                }
+                distance += this.wordNet.distance(nouns[i], nouns[j]);
+            }
+
+            if (distance > max) {
+                max = distance;
+                outcast = nouns[i];
+            }
+        }
+
+        return outcast;
     }
 
     /**

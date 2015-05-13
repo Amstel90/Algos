@@ -6,7 +6,7 @@ import org.junit.Test;
  */
 public class SAPTest {
 
-    public static final String folder = "D:\\Projects\\Algos\\AlgoP2T1\\src\\resources\\";
+    public static final String folder = "D:\\Projects\\Study\\src\\Algos\\AlgoP2T1\\src\\resources\\";
 
     Digraph twoVertex = new Digraph(2);
     SAP twoVertexSap;

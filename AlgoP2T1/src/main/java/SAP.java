@@ -19,7 +19,7 @@ public class SAP {
             throw new NullPointerException();
         }
 
-        this.digraph = G;
+        this.digraph = new Digraph(G);
     }
 
     /**
@@ -125,11 +125,12 @@ public class SAP {
 
         return ancestor(bfsV, bfsW, vertexes);
     }
+
     /**
      * Length of shortest ancestral path between any vertex in v and any vertex in w; -1 if no such path.
      *
-     * @param bfsV param 1
-     * @param bfsW param 2
+     * @param bfsV     param 1
+     * @param bfsW     param 2
      * @param vertexes param 2
      * @return length of shortest ancestral path between any vertex in v and any vertex in w; -1 if no such path
      */
@@ -169,8 +170,8 @@ public class SAP {
     /**
      * Length of shortest ancestral path between any vertex in v and any vertex in w; -1 if no such path.
      *
-     * @param bfsV param 1
-     * @param bfsW param 2
+     * @param bfsV     param 1
+     * @param bfsW     param 2
      * @param vertexes param 2
      * @return length of shortest ancestral path between any vertex in v and any vertex in w; -1 if no such path
      */
