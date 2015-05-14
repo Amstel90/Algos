@@ -1,11 +1,14 @@
-import java.util.*;
+import java.util.Map;
+import java.util.List;
+import java.util.HashMap;
+import java.util.LinkedList;
 
 /**
  * Created by ASUS on 16.04.2015.
  */
 public class WordNet {
 
-    private Map<String, Integer> synsetMap;
+    private Map<String, List<Integer>> synsetMap;
     private Map<Integer, List<String>> synsetMapId;
     private SAP sap;
 
@@ -115,7 +118,7 @@ public class WordNet {
      */
     private void parse(String synsets, String hypernyms) {
 
-        synsetMap = new HashMap<String, Integer>();
+        synsetMap = new HashMap<String, List<Integer>>();
         synsetMapId = new HashMap<Integer, List<String>>();
 
         In synsetsIn = new In(synsets);
@@ -144,6 +147,16 @@ public class WordNet {
             throw new IllegalArgumentException();
         }
 
+        int rooted = 0;
+        for (int i = 0; i < digraph.V(); i++) {
+            if (!digraph.adj(i).iterator().hasNext())
+                rooted++;
+        }
+
+        if (rooted != 1) {
+            throw new IllegalArgumentException();
+        }
+
         sap = new SAP(digraph);
     }
 
@@ -160,14 +173,24 @@ public class WordNet {
 
         String[] split2 = split[1].split(" ");
 
-        List<String> sap = new LinkedList<String>();
+        List<String> synList = new LinkedList<String>();
+
 
         for (String syn : split2) {
-            synsetMap.put(syn, id);
-            sap.add(syn);
+
+            List<Integer> bag = synsetMap.get(syn);
+
+            if (bag == null) {
+                bag = new LinkedList<Integer>();
+                synsetMap.put(syn, bag);
+            }
+
+            bag.add(id);
+
+            synList.add(syn);
         }
 
-        synsetMapId.put(id, sap);
+        synsetMapId.put(id, synList);
     }
 
     /**
