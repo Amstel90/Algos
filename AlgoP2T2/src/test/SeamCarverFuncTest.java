@@ -15,6 +15,6 @@ public class SeamCarverFuncTest {
     }
 
     private SeamCarver getSeamCarver(String name) {
-        return new SeamCarver(new Picture(Folder.PATH + pictureName));
+        return new SeamCarver(new Picture(Folder.PATH + name));
     }
 }
